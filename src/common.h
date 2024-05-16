@@ -127,7 +127,6 @@ struct threadArgs {
   int* gpus;
   int localRank;
   int enable_out_of_place;
-  int enable_cache_flush;
   void** sendbuffs;
   size_t sendBytes;
   size_t sendInplaceOffset;
