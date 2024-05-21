@@ -92,6 +92,7 @@ All tests support the same set of arguments :
   * `-z,--blocking <0/1>` Make NCCL collective blocking, i.e. have CPUs wait and sync after each collective. Default : 0.
   * `-G,--cudagraph <num graph launches>` Capture iterations as a CUDA graph and then replay specified number of times. Default : 0.
   * `-F,--cache_flush <cache flush after every -F iteration>` Enable cache flush after every -F iteration. Default : 0 (No cache flush).
+  * `-R,--rotating_tensor <0/1>` Enable rotating tensor. Default : 0 (No rotating tensor).
 
 ## Unit tests
 
