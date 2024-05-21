@@ -25,6 +25,8 @@
 
 int test_ncclVersion = 0; // init'd with ncclGetVersion()
 int32_t gpu_block3;
+// size_t cache_bytes = 256 * 1024 * 1024 * 2; // Use 2x 256MiB
+size_t cache_bytes = 192 * 1024 * 1024; // Use 192MB
 
 #if NCCL_MAJOR >= 2
   ncclDataType_t test_types[ncclNumTypes] = {
@@ -424,9 +426,11 @@ testResult_t startColl(struct threadArgs* args, ncclDataType_t type, ncclRedOp_t
 
   // Try to change offset for each iteration so that we avoid cache effects and catch race conditions in ptrExchange
   size_t totalnbytes = std::max(args->sendBytes, args->expectedBytes);
-  size_t steps = totalnbytes ? args->maxbytes / totalnbytes : 1;
+  totalnbytes = std::max(totalnbytes, cache_bytes);
+  // size_t steps = totalnbytes ? args->maxbytes / totalnbytes : 1;
+  size_t steps = totalnbytes ? (std::max(2*cache_bytes,args->maxbytes)) / totalnbytes : 1;
   size_t shift = totalnbytes * (iter % steps);
-  printf("args->sendBytes=%d, args->expectedBytes=%d, args->maxbytes=%d, steps=%d, iter=%d, shift=%d \n",args->sendBytes, args->expectedBytes, args->maxbytes, steps, iter, shift);
+  printf("args->sendBytes=%zu, args->expectedBytes=%zu, args->maxbytes=%zu, steps=%zu, iter=%zu, shift=%zu \n",args->sendBytes, args->expectedBytes, args->maxbytes, steps, iter, shift);
   if (args->nGpus > 1) NCCLCHECK(ncclGroupStart());
   for (int i = 0; i < args->nGpus; i++) {
 #ifndef NCCL_MAJOR
@@ -852,7 +856,11 @@ testResult_t threadLaunch(struct testThread* thread) {
 }
 
 testResult_t AllocateBuffs(void **sendbuff, size_t sendBytes, void **recvbuff, size_t recvBytes, void **expected, size_t nbytes) {
-  //TODO: check nbytes 
+  //TODO: check nbytes
+  //TODO: no use of sendBytes
+  recvBytes = std::max(recvBytes, 2*cache_bytes);
+  nbytes = std::max(nbytes, 2*cache_bytes);
+  printf("sendBytes = %zu, recvBytes = %zu, nbytes = %zu\n", sendBytes, recvBytes, nbytes);
   if (memorytype == ncclFine) {
     CUDACHECK(hipExtMallocWithFlags(sendbuff, nbytes, hipDeviceMallocFinegrained));
     CUDACHECK(hipExtMallocWithFlags(recvbuff, nbytes, hipDeviceMallocFinegrained));
