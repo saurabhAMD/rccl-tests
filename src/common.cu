@@ -25,7 +25,6 @@
 
 int test_ncclVersion = 0; // init'd with ncclGetVersion()
 int32_t gpu_block3;
-// size_t cache_bytes = 256 * 1024 * 1024 * 2; // Use 2x 256MiB
 size_t cache_bytes = 192 * 1024 * 1024; // Use 192MB
 
 #if NCCL_MAJOR >= 2
@@ -428,15 +427,20 @@ testResult_t startColl(struct threadArgs* args, ncclDataType_t type, ncclRedOp_t
   // Try to change offset for each iteration so that we avoid cache effects and catch race conditions in ptrExchange
   size_t totalnbytes = std::max(args->sendBytes, args->expectedBytes);
   size_t steps = 1;
+  size_t shift = 0;
   if(enable_rotating_tensor) {
-    totalnbytes = std::max(totalnbytes, cache_bytes);
-    steps = totalnbytes ? (std::max(2*cache_bytes,args->maxbytes)) / totalnbytes : 1;
+    // totalnbytes = std::max(totalnbytes, cache_bytes);
+    // steps = totalnbytes ? (std::max(2*cache_bytes,args->maxbytes)) / totalnbytes : 1;
+    // steps = (args->maxbytes + cache_bytes) / cache_bytes;
+    // shift = cache_bytes * (iter % steps);
+    shift = cache_bytes * (iter % 2);
   }
   else {
     steps = totalnbytes ? args->maxbytes / totalnbytes : 1;
+    shift = totalnbytes * (iter % steps);
   }
-  size_t shift = totalnbytes * (iter % steps);
   printf("args->sendBytes=%zu, args->expectedBytes=%zu, args->maxbytes=%zu, steps=%zu, iter=%zu, shift=%zu \n",args->sendBytes, args->expectedBytes, args->maxbytes, steps, iter, shift);
+  
   if (args->nGpus > 1) NCCLCHECK(ncclGroupStart());
   for (int i = 0; i < args->nGpus; i++) {
 #ifndef NCCL_MAJOR
@@ -862,13 +866,12 @@ testResult_t threadLaunch(struct testThread* thread) {
 }
 
 testResult_t AllocateBuffs(void **sendbuff, size_t sendBytes, void **recvbuff, size_t recvBytes, void **expected, size_t nbytes) {
-  //TODO: check nbytes
-  //TODO: no use of sendBytes
   if(enable_rotating_tensor) {
     recvBytes = std::max(recvBytes, 2*cache_bytes);
     nbytes = std::max(nbytes, 2*cache_bytes);
+    recvBytes = recvBytes + cache_bytes;
+    nbytes = nbytes + cache_bytes;
   }
-  printf("sendBytes = %zu, recvBytes = %zu, nbytes = %zu\n", sendBytes, recvBytes, nbytes);
   if (memorytype == ncclFine) {
     CUDACHECK(hipExtMallocWithFlags(sendbuff, nbytes, hipDeviceMallocFinegrained));
     CUDACHECK(hipExtMallocWithFlags(recvbuff, nbytes, hipDeviceMallocFinegrained));
@@ -1246,7 +1249,6 @@ testResult_t run() {
   size_t sendBytes, recvBytes;
 
   ncclTestEngine.getBuffSize(&sendBytes, &recvBytes, (size_t)maxBytes, (size_t)ncclProcs*nGpus*nThreads);
-  //TODO: Check send, recvBytes and maxBytes
 
   envstr = getenv("NCCL_TESTS_DEVICE");
   gpu0 = envstr ? atoi(envstr) : -1;
