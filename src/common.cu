@@ -426,7 +426,6 @@ testResult_t startColl(struct threadArgs* args, ncclDataType_t type, ncclRedOp_t
 
   // Try to change offset for each iteration so that we avoid cache effects and catch race conditions in ptrExchange
   size_t totalnbytes = std::max(args->sendBytes, args->expectedBytes);
-  size_t steps = 1;
   size_t shift = 0;
   if(enable_rotating_tensor) {
     // totalnbytes = std::max(totalnbytes, cache_bytes);
@@ -436,10 +435,10 @@ testResult_t startColl(struct threadArgs* args, ncclDataType_t type, ncclRedOp_t
     shift = cache_bytes * (iter % 2);
   }
   else {
-    steps = totalnbytes ? args->maxbytes / totalnbytes : 1;
+    size_t steps = totalnbytes ? args->maxbytes / totalnbytes : 1;
     shift = totalnbytes * (iter % steps);
   }
-  printf("args->sendBytes=%zu, args->expectedBytes=%zu, args->maxbytes=%zu, steps=%zu, iter=%zu, shift=%zu \n",args->sendBytes, args->expectedBytes, args->maxbytes, steps, iter, shift);
+  printf("totalnbytes=%zu, args->maxbytes=%zu, iter=%zu, shift=%zu \n", totalnbytes, args->maxbytes, iter, shift);
   
   if (args->nGpus > 1) NCCLCHECK(ncclGroupStart());
   for (int i = 0; i < args->nGpus; i++) {
