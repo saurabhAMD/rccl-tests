@@ -12,7 +12,7 @@ def runCompileCommand(platform, project, jobName)
                 
                 git clone https://github.com/ROCm/rccl.git
                 cd rccl
-                ./install.sh -li
+                sudo ./install.sh -li
                 ${auxiliary.exitIfNotSuccess()}
                 
                 cd ${project.paths.project_build_prefix}
