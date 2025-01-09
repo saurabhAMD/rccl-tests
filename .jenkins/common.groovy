@@ -17,7 +17,7 @@ def runCompileCommand(platform, project, jobName)
                 ./install.sh -l
                 ls build/release -l
                 ls build/release/lib -l
-                cd ..
+                cd ../..
                 ${auxiliary.exitIfNotSuccess()}
                 
                 cd ${project.paths.project_build_prefix}
