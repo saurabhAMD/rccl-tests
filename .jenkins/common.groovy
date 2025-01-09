@@ -14,16 +14,19 @@ def runCompileCommand(platform, project, jobName)
                 cd ${project.paths.build_prefix}
                 git clone --recursive https://github.com/ROCm/rccl.git
                 cd rccl
-                ./install.sh -l
-                cd ../..
+                mkdir build
+                cd build
+                cmake ..
+                make -j\$(nproc)
+                cd ../../..
                 ${auxiliary.exitIfNotSuccess()}
                 
                 cd ${project.paths.project_build_prefix}
                 export RCCL_DIR=\$(pwd)/../rccl/build/release
-                cmake \
-                    -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hipcc \
-                    -S . -B build
-                make -C build -j\$(nproc)
+                mkdir build
+                cd build
+                CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_PREFIX_PATH=\$RCCL_DIR ..
+                make -j\$(nproc)
                 ${auxiliary.exitIfNotSuccess()}
             """
 
