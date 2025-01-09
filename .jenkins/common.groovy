@@ -10,7 +10,7 @@ def runCompileCommand(platform, project, jobName)
     def command = """#!/usr/bin/env bash
                 set -x
                 
-                rm -rf rccl
+                sudo rm -rf rccl
                 git clone --recursive https://github.com/ROCm/rccl.git
                 cd rccl
                 sudo -E ./install.sh -li
