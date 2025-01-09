@@ -15,9 +15,9 @@ def runCompileCommand(platform, project, jobName)
                 git clone --recursive https://github.com/ROCm/rccl.git
                 cd rccl
                 ./install.sh -l
-                ls -l
-                ls lib -l
-                cd ../../..
+                ls build/release -l
+                ls build/release/lib -l
+                cd ..
                 ${auxiliary.exitIfNotSuccess()}
                 
                 cd ${project.paths.project_build_prefix}
