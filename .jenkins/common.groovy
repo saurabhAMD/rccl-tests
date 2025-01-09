@@ -18,11 +18,15 @@ def runCompileCommand(platform, project, jobName)
                 cd build
                 cmake ..
                 make -j\$(nproc)
+                ls -l
+                ls lib -l
                 cd ../../..
                 ${auxiliary.exitIfNotSuccess()}
                 
                 cd ${project.paths.project_build_prefix}
                 export RCCL_DIR=\$(pwd)/../rccl/build/release
+                export CUSTOM_RCCL_LIB=\$RCCL_DIR/lib/librccl.so
+                export NCCL_HOME=\$RCCL_DIR
                 mkdir build
                 cd build
                 CXX=/opt/rocm/bin/hipcc cmake -DCMAKE_PREFIX_PATH=\$RCCL_DIR ..
