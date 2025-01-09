@@ -14,7 +14,7 @@ def runCompileCommand(platform, project, jobName)
                 cd ${project.paths.build_prefix}
                 git clone --recursive https://github.com/ROCm/rccl.git
                 cd rccl
-                sudo -E ./install.sh -li
+                ./install.sh -l
                 cd ../..
                 ${auxiliary.exitIfNotSuccess()}
                 
