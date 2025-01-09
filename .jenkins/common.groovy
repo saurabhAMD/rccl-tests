@@ -16,13 +16,12 @@ def runCompileCommand(platform, project, jobName)
                 cd rccl
                 ./install.sh -l
                 ls build/release -l
-                ls build/release/lib -l
                 cd ../..
                 ${auxiliary.exitIfNotSuccess()}
                 
                 cd ${project.paths.project_build_prefix}
                 export RCCL_DIR=\$(pwd)/../rccl/build/release
-                export CUSTOM_RCCL_LIB=\$RCCL_DIR/lib/librccl.so
+                export CUSTOM_RCCL_LIB=\$RCCL_DIR/librccl.so
                 export NCCL_HOME=\$RCCL_DIR
                 mkdir build
                 cd build
