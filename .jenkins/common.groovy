@@ -19,7 +19,7 @@ def runCompileCommand(platform, project, jobName)
                 ${auxiliary.exitIfNotSuccess()}
                 
                 cd ${project.paths.project_build_prefix}
-                export RCCL_DIR=\$(pwd)/../rccl
+                export RCCL_DIR=\$(pwd)/../rccl/build/release
                 cmake \
                     -DCMAKE_CXX_COMPILER=/opt/rocm/bin/hipcc \
                     -S . -B build
